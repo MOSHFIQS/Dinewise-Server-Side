@@ -7,7 +7,7 @@ const port = process.env.PORT || 5000
 
 //middleware
 app.use(cors({
-    origin:'http://localhost:5173'
+    origin: 'http://localhost:5173'
 }))
 app.use(express.json())
 
@@ -17,7 +17,7 @@ app.use(express.json())
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.hiz8ocw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -36,19 +36,62 @@ async function run() {
 
         const menuCollection = client.db('bistroDb').collection('menu')
         const reviewsCollection = client.db('bistroDb').collection('reviews')
+        const cartCollection = client.db('bistroDb').collection('cart')
+        const usersCollection = client.db('bistroDb').collection('users')
 
-        app.get('/menu',async(req,res) => {
+        app.get('/menu', async (req, res) => {
             const result = await menuCollection.find().toArray()
             res.send(result)
         })
-        app.get('/reviews',async(req,res) => {
+        app.get('/reviews', async (req, res) => {
             const result = await reviewsCollection.find().toArray()
+            res.send(result)
+        })
+        app.get('/cart', async (req, res) => {
+            const email = req.query.email
+            console.log(email)
+            const query = { email: email }
+            console.log(query)
+            const result = await cartCollection.find(query).toArray()
+            res.send(result)
+            // console.log(result)
+        })
+        app.delete('/cart/:id', async (req, res) => {
+            const id = req.params.id
+            console.log(id)
+            const query = { _id: new ObjectId(id) }
+            const result = await cartCollection.deleteOne(query)
+            res.send(result)
+        })
+
+        // app.get('/cart',async(req,res) => {
+        //     const result = await cartCollection.find().toArray()
+        //     res.send(result)
+        // })
+        app.post('/cart', async (req, res) => {
+            const cart = req.body
+            const result = await cartCollection.insertOne(cart)
             res.send(result)
         })
 
 
-
-
+        // post users
+        app.post('/user', async (req, res) => {
+            const user = req.body
+            const { email } = user
+            try {
+                const isExists = await usersCollection.findOne({ email: email })
+                console.log(isExists)
+                if (isExists) {
+                    return res.status(400).send({ message: 'user already exists' })
+                }
+                const result = await usersCollection.insertOne(user)
+                res.send(result)
+            }
+            catch {
+                res.status(403).send({ message: 'something went wrong' })
+            }
+        })
 
 
 
