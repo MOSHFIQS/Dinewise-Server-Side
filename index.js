@@ -5,7 +5,9 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 // const cookieParser = require('cookie-parser') // not used, so commented
 
+
 require("dotenv").config(); // Load environment variables from .env file
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000; // Set the port from env or default to 5000
 
 // Middleware configuration
@@ -181,6 +183,26 @@ async function run() {
       const query = { _id: new ObjectId(id) }; // Create query
       const result = await usersCollection.deleteOne(query); // Delete user
       res.send(result);
+    });
+
+    // payment intent
+
+    app.post("/create-payment-intent", verifyToken, async (req, res) => {
+      try {
+        const { price } = req.body;
+        const amount = Math.round(price * 100);
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount,
+          currency: "usd",
+          payment_method_types: ["card"],
+        });
+        res.send({
+          clientSecret: paymentIntent.client_secret,
+        });
+      } catch (error) {
+        console.error("Stripe error:", error.message);
+        res.status(500).send({ error: "Payment initiation failed" });
+      }
     });
 
     // Ping MongoDB to check connection (commented)
