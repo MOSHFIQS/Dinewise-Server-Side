@@ -5,7 +5,6 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 // const cookieParser = require('cookie-parser') // not used, so commented
 
-
 require("dotenv").config(); // Load environment variables from .env file
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000; // Set the port from env or default to 5000
@@ -44,6 +43,7 @@ async function run() {
     const reviewsCollection = client.db("bistroDb").collection("reviews");
     const cartCollection = client.db("bistroDb").collection("cart");
     const usersCollection = client.db("bistroDb").collection("users");
+    const paymentsCollection = client.db("bistroDb").collection("payments");
 
     // Middleware to verify JWT token
     const verifyToken = (req, res, next) => {
@@ -204,6 +204,9 @@ async function run() {
         res.status(500).send({ error: "Payment initiation failed" });
       }
     });
+
+    // after payment done
+   
 
     // Ping MongoDB to check connection (commented)
     // await client.db("admin").command({ ping: 1 });
