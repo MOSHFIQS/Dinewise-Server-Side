@@ -206,7 +206,18 @@ async function run() {
     });
 
     // after payment done
-   
+    app.post("/payment", async(req, res ) => {
+      const paymentInfo = req.body
+      console.log(paymentInfo);
+      const result = await paymentsCollection.insertOne(paymentInfo)
+      res.send(result)
+    })
+    //get all payments
+    app.get("/allPayments",async(req,res) => {
+      const result = await paymentsCollection.find().toArray()
+      res.send(result)
+    })
+
 
     // Ping MongoDB to check connection (commented)
     // await client.db("admin").command({ ping: 1 });
