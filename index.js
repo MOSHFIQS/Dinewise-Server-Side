@@ -1,25 +1,28 @@
-// Importing necessary modules
+
 const express = require("express");
-const app = express();
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-// const cookieParser = require('cookie-parser') // not used, so commented
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+require("dotenv").config();
 
-require("dotenv").config(); // Load environment variables from .env file
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const port = process.env.PORT || 5000; // Set the port from env or default to 5000
+
+const app = express();
+const port = process.env.PORT || 5000;
 
 // Middleware configuration
-import cors from "cors";
-
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174","dinewise-client-side.vercel.app"],
-    credentials: true, // if you need cookies/auth
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://dinewise-client-side.vercel.app",
+    ],
+    credentials: true,
   })
 );
 
-app.use(express.json()); // Parse incoming JSON requests
+app.use(express.json());
 
 // MongoDB setup
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
