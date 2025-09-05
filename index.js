@@ -226,7 +226,7 @@ async function run() {
 
     // Ping MongoDB to check connection (commented)
     // await client.db("admin").command({ ping: 1 });
-    //console.log(
+    console.log(
     "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
