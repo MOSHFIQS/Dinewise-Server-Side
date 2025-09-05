@@ -10,11 +10,15 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000; // Set the port from env or default to 5000
 
 // Middleware configuration
+import cors from "cors";
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // Allow requests from this origin
+    origin: ["http://localhost:5173", "http://localhost:5174","dinewise-client-side.vercel.app"],
+    credentials: true, // if you need cookies/auth
   })
 );
+
 app.use(express.json()); // Parse incoming JSON requests
 
 // MongoDB setup
@@ -206,14 +210,14 @@ async function run() {
     });
 
     // after payment done
-    app.post("/payment", async(req, res ) => {
+    app.post("/payment",verifyToken, async(req, res ) => {
       const paymentInfo = req.body
       console.log(paymentInfo);
       const result = await paymentsCollection.insertOne(paymentInfo)
       res.send(result)
     })
     //get all payments
-    app.get("/allPayments",async(req,res) => {
+    app.get("/allPayments",verifyToken,verifyAdmin, async(req,res) => {
       const result = await paymentsCollection.find().toArray()
       res.send(result)
     })
