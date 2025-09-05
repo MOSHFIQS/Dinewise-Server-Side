@@ -52,12 +52,12 @@ async function run() {
 
     // Middleware to verify JWT token
     const verifyToken = (req, res, next) => {
-      console.log(req.headers); // Log headers for debugging
+      //console.log(req.headers); // Log headers for debugging
       if (!req.headers.authorization) {
         return res.status(401).send({ message: "unauthorized access" }); // No token provided
       }
       const token = req.headers.authorization.split(" ")[1]; // Get token after 'Bearer'
-      console.log(token); // Log token for debugging
+      //console.log(token); // Log token for debugging
       jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err) {
           return res.status(401).send({ message: "unauthorized access" }); // Invalid token
@@ -120,9 +120,9 @@ async function run() {
     // Get cart items by email (query parameter)
     app.get("/cart", async (req, res) => {
       const email = req.query.email; // Get email from query
-      console.log(email); // Log for debugging
+      //console.log(email); // Log for debugging
       const query = { email: email };
-      console.log(query); // Log query object
+      //console.log(query); // Log query object
       const result = await cartCollection.find(query).toArray(); // Fetch cart items
       res.send(result);
     });
@@ -130,7 +130,7 @@ async function run() {
     // Delete a cart item by ID
     app.delete("/cart/:id", async (req, res) => {
       const id = req.params.id; // Get id from route
-      console.log(id); // Log for debugging
+      //console.log(id); // Log for debugging
       const query = { _id: new ObjectId(id) }; // Create query object
       const result = await cartCollection.deleteOne(query); // Delete item
       res.send(result);
@@ -149,7 +149,7 @@ async function run() {
       const { email } = user; // Destructure email
       try {
         const isExists = await usersCollection.findOne({ email: email }); // Check if user exists
-        console.log(isExists); // Log result
+        //console.log(isExists); // Log result
         if (isExists) {
           return res.status(400).send({ message: "user already exists" }); // Return error if exists
         }
@@ -162,7 +162,7 @@ async function run() {
 
     // Get all users (admin access required)
     app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
-      console.log(req.decoded); // Log decoded user
+      //console.log(req.decoded); // Log decoded user
       const result = await usersCollection.find().toArray(); // Fetch all users
       res.send(result);
     });
@@ -170,7 +170,7 @@ async function run() {
     // Make a user an admin by ID
     app.patch("/users/admin/:id", async (req, res) => {
       const id = req.params.id; // Get user ID
-      console.log(id); // Log ID
+      //console.log(id); // Log ID
       const query = { _id: new ObjectId(id) }; // Create query
       const updatedDoc = {
         $set: {
@@ -184,7 +184,7 @@ async function run() {
     // Delete a user by ID
     app.delete("/users/admin/:id", async (req, res) => {
       const id = req.params.id; // Get user ID
-      console.log(id); // Log ID
+      //console.log(id); // Log ID
       const query = { _id: new ObjectId(id) }; // Create query
       const result = await usersCollection.deleteOne(query); // Delete user
       res.send(result);
@@ -211,14 +211,14 @@ async function run() {
     });
 
     // after payment done
-    app.post("/payment",verifyToken, async(req, res ) => {
+    app.post("/payment", verifyToken, async (req, res) => {
       const paymentInfo = req.body
-      console.log(paymentInfo);
+      //console.log(paymentInfo);
       const result = await paymentsCollection.insertOne(paymentInfo)
       res.send(result)
     })
     //get all payments
-    app.get("/allPayments",verifyToken,verifyAdmin, async(req,res) => {
+    app.get("/allPayments", verifyToken, verifyAdmin, async (req, res) => {
       const result = await paymentsCollection.find().toArray()
       res.send(result)
     })
@@ -226,8 +226,8 @@ async function run() {
 
     // Ping MongoDB to check connection (commented)
     // await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
+    //console.log(
+    "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
     // Close MongoDB client if desired (commented)
@@ -243,5 +243,5 @@ app.get("/", (req, res) => {
 
 // Start the server with port
 app.listen(port, () => {
-  console.log("server is running on port :", port);
+  //console.log("server is running on port :", port);
 });
