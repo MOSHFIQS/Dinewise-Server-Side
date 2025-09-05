@@ -241,7 +241,7 @@ app.get("/", (req, res) => {
   res.send("server running successfully");
 });
 
-// Start the server
+// Start the server with port
 app.listen(port, () => {
   console.log("server is running on port :", port);
 });
