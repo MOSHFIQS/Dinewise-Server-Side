@@ -24,8 +24,6 @@ app.use(
 
 app.use(express.json());
 
-// MongoDB setup
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 // MongoDB connection URI with credentials from .env
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.hiz8ocw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
