@@ -1,0 +1,46 @@
+model Order {
+     id         String @id @default(uuid())
+     customerId String
+     customer   User   @relation("CustomerOrders", fields: [customerId], references: [id])
+
+     addressId String?
+     address   Address? @relation(fields: [addressId], references: [id])
+
+     addressSnapshot Json?
+
+     couponId       String?
+     coupon         Coupon? @relation(fields: [couponId], references: [id])
+     couponDiscount Float   @default(0)
+
+     status      OrderStatus @default(PLACED)
+     subtotal    Float
+     deliveryFee Float       @default(0)
+     tax         Float       @default(0)
+     totalPrice  Float
+     notes       String?
+     tableNumber String?
+
+     items   OrderItem[]
+     payment Payment?
+
+     createdAt DateTime @default(now())
+     updatedAt DateTime @updatedAt
+
+     @@map("orders")
+}
+
+model OrderItem {
+     id         String   @id @default(uuid())
+     orderId    String
+     order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+     menuItemId String
+     menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+
+     menuItemName  String
+     menuItemImage String?
+     quantity      Int
+     unitPrice     Float
+     totalPrice    Float
+
+     @@map("order_items")
+}

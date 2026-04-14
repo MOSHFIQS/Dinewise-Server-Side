@@ -1,0 +1,43 @@
+enum Role {
+     CUSTOMER
+     CHEF
+     ADMIN
+}
+
+enum UserStatus {
+     ACTIVE
+     BANNED
+     SUSPENDED
+}
+
+enum OrderStatus {
+     PLACED
+     CONFIRMED
+     PROCESSING
+     SHIPPED
+     DELIVERED
+     CANCELLED
+     REFUNDED
+}
+
+enum PaymentStatus {
+     PENDING
+     INITIATED
+     SUCCESS
+     FAILED
+     CANCELLED
+     REFUNDED
+}
+
+enum PaymentMethod {
+     STRIPE
+     CASH_ON_DELIVERY
+     BANK_TRANSFER
+}
+
+enum NotificationType {
+     ORDER_UPDATE
+     PAYMENT_UPDATE
+     SYSTEM
+     PROMOTION
+}
