@@ -1,7 +1,15 @@
 import { prisma } from "../../lib/prisma";
 
 const createAddress = async (userId: string, payload: any) => {
-     return prisma.address.create({ data: { ...payload, userId } });
+     const { zipCode, postalCode, title, ...rest } = payload;
+     return prisma.address.create({ 
+          data: { 
+               ...rest, 
+               userId,
+               title: title || "Home",
+               postalCode: postalCode || zipCode,
+          } 
+     });
 };
 
 const getAddresses = async (userId: string) => {
@@ -9,7 +17,12 @@ const getAddresses = async (userId: string) => {
 };
 
 const updateAddress = async (id: string, userId: string, payload: any) => {
-     return prisma.address.update({ where: { id, userId }, data: payload });
+     const { zipCode, postalCode, ...rest } = payload;
+     const dataToUpdate = { ...rest };
+     if (postalCode || zipCode) {
+          dataToUpdate.postalCode = postalCode || zipCode;
+     }
+     return prisma.address.update({ where: { id, userId }, data: dataToUpdate });
 };
 
 const deleteAddress = async (id: string, userId: string) => {
