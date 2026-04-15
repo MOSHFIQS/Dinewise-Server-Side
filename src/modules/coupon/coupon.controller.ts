@@ -33,7 +33,7 @@ const validateCoupon = async (req: Request, res: Response, next: NextFunction) =
 
 const deleteCoupon = async (req: Request, res: Response, next: NextFunction) => {
      try {
-          await couponService.deleteCoupon(req.params.id);
+          await couponService.deleteCoupon(req.params.id as string);
           sendResponse(res, { statusCode: status.OK, success: true, message: "Coupon deleted", data: null });
      } catch (e) {
           next(e);

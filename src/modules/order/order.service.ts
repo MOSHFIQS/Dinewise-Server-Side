@@ -118,7 +118,7 @@ const getCustomerOrders = async (customerId: string, query: IQueryParams = {}) =
      const qb = new QueryBuilder(prisma.order, query, {
           filterableFields: ["status"],
      });
-     return qb.where({ customerId }).include({ items: true }).sort().paginate().execute();
+     return qb.where({ customerId }).include({ items: true, payment: true }).sort().paginate().execute();
 };
 
 const updateOrderStatus = async (id: string, status: OrderStatus) => {
@@ -145,6 +145,7 @@ const getAllOrders = async (query: IQueryParams = {}) => {
           .include({
                customer: { select: { id: true, name: true, phone: true } },
                items: true,
+               payment: true,
           })
           .sort()
           .paginate()

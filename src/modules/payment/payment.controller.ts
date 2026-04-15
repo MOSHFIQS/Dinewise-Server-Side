@@ -5,7 +5,7 @@ import { paymentService } from "./payment.service";
 
 const createPaymentIntent = async (req: Request, res: Response, next: NextFunction) => {
      try {
-          const result = await paymentService.createPaymentIntent(req.params.orderId, (req as any).user.id);
+          const result = await paymentService.createPaymentIntent(req.params.orderId as string, (req as any).user.id);
           sendResponse(res, { statusCode: status.OK, success: true, message: "Payment intent created", data: result });
      } catch (e) {
           next(e);

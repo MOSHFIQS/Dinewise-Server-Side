@@ -5,9 +5,7 @@ import { PaymentStatus, OrderStatus } from "../../../generated/prisma/enums";
 import { IQueryParams } from "../../interfaces/query.interface";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 
-const stripe = new Stripe(envVars.STRIPE.STRIPE_SECRET_KEY, {
-     apiVersion: "2025-02-24.acacia",
-});
+const stripe = new Stripe(envVars.STRIPE.STRIPE_SECRET_KEY);
 
 const createPaymentIntent = async (orderId: string, userId: string) => {
      const order = await prisma.order.findUnique({
@@ -43,16 +41,19 @@ const handleWebhook = async (event: any) => {
           const paymentIntent = event.data.object as Stripe.PaymentIntent;
           const orderId = paymentIntent.metadata.orderId;
 
-          await prisma.$transaction([
-               prisma.payment.update({
+          await prisma.$transaction(async (tx) => {
+               await tx.payment.update({
                     where: { orderId },
                     data: { status: PaymentStatus.SUCCESS, transactionId: paymentIntent.id },
-               }),
-               prisma.order.update({
+               });
+               await tx.order.update({
                     where: { id: orderId },
                     data: { status: OrderStatus.CONFIRMED },
-               }),
-          ]);
+               });
+          }, {
+               timeout: 10000,
+               maxWait: 5000,
+          });
      } else if (event.type === "payment_intent.payment_failed") {
           const paymentIntent = event.data.object as Stripe.PaymentIntent;
           const orderId = paymentIntent.metadata.orderId;
@@ -70,18 +71,20 @@ const verifyPayment = async (paymentIntentId: string) => {
      if (paymentIntent.status === "succeeded") {
           const orderId = paymentIntent.metadata.orderId;
 
-          const result = await prisma.$transaction([
-               prisma.payment.upsert({
+          const result = await prisma.$transaction(async (tx) => {
+               const payment = await tx.payment.upsert({
                     where: { orderId },
                     update: { status: PaymentStatus.SUCCESS, transactionId: paymentIntent.id },
                     create: { orderId, amount: paymentIntent.amount / 100, status: PaymentStatus.SUCCESS, transactionId: paymentIntent.id },
-               }),
-               prisma.order.update({
+               });
+               const order = await tx.order.update({
                     where: { id: orderId },
                     data: { status: OrderStatus.CONFIRMED },
-               }),
-          ], {
-               timeout: 10000, // Increase to 10 seconds for more resilience
+               });
+               return { payment, order };
+          }, {
+               timeout: 10000, // 10 seconds for resilience
+               maxWait: 5000,  // Wait up to 5s to acquire a connection
           });
           return result;
      } else {
