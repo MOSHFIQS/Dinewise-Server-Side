@@ -1,4 +1,6 @@
+import { IQueryParams } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 
 const createCategory = async (payload: { name: string; description?: string; image?: string }) => {
      return prisma.category.create({
@@ -6,10 +8,15 @@ const createCategory = async (payload: { name: string; description?: string; ima
      });
 };
 
-const getAllCategories = async () => {
-     return prisma.category.findMany({
-          orderBy: { name: "asc" },
-     });
+const getAllCategories = async (query: IQueryParams) => {
+     const categoryQuery = new QueryBuilder(prisma.category, query)
+          .search()
+          .filter()
+          .sort()
+          .paginate();
+
+     const result = await categoryQuery.execute();
+     return result;
 };
 
 const getCategoryById = async (id: string) => {

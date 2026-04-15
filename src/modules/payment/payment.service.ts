@@ -2,6 +2,8 @@ import { prisma } from "../../lib/prisma";
 import Stripe from "stripe";
 import { envVars } from "../../config/env";
 import { PaymentStatus, OrderStatus } from "../../../generated/prisma/enums";
+import { IQueryParams } from "../../interfaces/query.interface";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 
 const stripe = new Stripe(envVars.STRIPE.STRIPE_SECRET_KEY, {
      apiVersion: "2025-02-24.acacia",
@@ -62,11 +64,41 @@ const handleWebhook = async (event: any) => {
      }
 };
 
-const getAllPayments = async () => {
-     return prisma.payment.findMany({
-          orderBy: { createdAt: "desc" },
-          include: { order: { select: { customer: { select: { name: true, email: true } } } } },
-     });
+const verifyPayment = async (paymentIntentId: string) => {
+     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+     if (paymentIntent.status === "succeeded") {
+          const orderId = paymentIntent.metadata.orderId;
+
+          const result = await prisma.$transaction([
+               prisma.payment.upsert({
+                    where: { orderId },
+                    update: { status: PaymentStatus.SUCCESS, transactionId: paymentIntent.id },
+                    create: { orderId, amount: paymentIntent.amount / 100, status: PaymentStatus.SUCCESS, transactionId: paymentIntent.id },
+               }),
+               prisma.order.update({
+                    where: { id: orderId },
+                    data: { status: OrderStatus.CONFIRMED },
+               }),
+          ], {
+               timeout: 10000, // Increase to 10 seconds for more resilience
+          });
+          return result;
+     } else {
+          throw new Error("Payment not succeeded yet");
+     }
 };
 
-export const paymentService = { createPaymentIntent, handleWebhook, getAllPayments };
+const getAllPayments = async (query: IQueryParams) => {
+     const paymentQuery = new QueryBuilder(prisma.payment, query)
+          .search()
+          .filter()
+          .sort()
+          .paginate();
+
+     return paymentQuery
+          .include({ order: { select: { customer: { select: { name: true, email: true } } } } })
+          .execute();
+};
+
+export const paymentService = { createPaymentIntent, handleWebhook, getAllPayments, verifyPayment };

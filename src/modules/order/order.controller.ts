@@ -3,6 +3,7 @@ import status from "http-status";
 import sendResponse from "../../utils/sendResponse";
 import { orderService } from "./order.service";
 import { OrderStatus } from "../../../generated/prisma/enums";
+import { IQueryParams } from "../../interfaces/query.interface";
 
 const placeOrder = async (req: Request, res: Response, next: NextFunction) => {
      try {
@@ -15,7 +16,7 @@ const placeOrder = async (req: Request, res: Response, next: NextFunction) => {
 
 const getCustomerOrders = async (req: Request, res: Response, next: NextFunction) => {
      try {
-          const result = await orderService.getCustomerOrders((req as any).user.id, req.query);
+          const result = await orderService.getCustomerOrders((req as any).user.id, req.query as IQueryParams);
           sendResponse(res, { statusCode: status.OK, success: true, message: "Orders fetched", data: result });
      } catch (e) {
           next(e);
@@ -24,7 +25,7 @@ const getCustomerOrders = async (req: Request, res: Response, next: NextFunction
 
 const getOrderById = async (req: Request, res: Response, next: NextFunction) => {
      try {
-          const result = await orderService.getOrderById(req.params.id);
+          const result = await orderService.getOrderById(req.params.id as string);
           sendResponse(res, { statusCode: status.OK, success: true, message: "Order fetched", data: result });
      } catch (e) {
           next(e);
@@ -44,7 +45,7 @@ const updateOrderStatus = async (req: Request, res: Response, next: NextFunction
           const newStatus = statusMap[action];
           if (!newStatus) throw new Error("Invalid status action");
 
-          const result = await orderService.updateOrderStatus(req.params.id, newStatus);
+          const result = await orderService.updateOrderStatus(req.params.id as string, newStatus);
           sendResponse(res, { statusCode: status.OK, success: true, message: "Order updated", data: result });
      } catch (e) {
           next(e);
@@ -53,7 +54,7 @@ const updateOrderStatus = async (req: Request, res: Response, next: NextFunction
 
 const getAllOrders = async (req: Request, res: Response, next: NextFunction) => {
      try {
-          const result = await orderService.getAllOrders(req.query);
+          const result = await orderService.getAllOrders(req.query as IQueryParams);
           sendResponse(res, { statusCode: status.OK, success: true, message: "Orders fetched", data: result });
      } catch (e) {
           next(e);

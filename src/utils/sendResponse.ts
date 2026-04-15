@@ -4,16 +4,23 @@ type SendResponseType<T> = {
      statusCode: number;
      success: boolean;
      message?: string;
+     meta?: {
+          page: number;
+          limit: number;
+          total: number;
+          totalPage: number;
+     };
      data?: T;
 };
 
 const sendResponse = <T>(res: Response, payload: SendResponseType<T>) => {
-     const { statusCode, success, message, data } = payload;
+     const { statusCode, success, message, meta, data } = payload;
 
      return res.status(statusCode).json({
           success,
           message,
-          data,
+          meta: meta || (data as any)?.meta || null,
+          data: (data as any)?.data || data || null,
      });
 };
 

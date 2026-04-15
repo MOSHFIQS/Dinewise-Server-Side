@@ -16,7 +16,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
 const updateUserStatus = async (req: Request, res: Response, next: NextFunction) => {
      try {
           const { status: userStatus } = req.body;
-          const result = await adminService.updateUserStatus(req.params.id, userStatus);
+          const result = await adminService.updateUserStatus(req.params.id as string, userStatus);
           sendResponse(res, { statusCode: status.OK, success: true, message: "User status updated", data: result });
      } catch (e) {
           next(e);

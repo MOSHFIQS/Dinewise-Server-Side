@@ -22,16 +22,32 @@ const placeOrder = async (customerId: string, payload: CreateOrderPayload) => {
           let couponDiscount = 0;
 
           const orderItems = [];
+          
+          // Bulk fetch all menu items to minimize sequential lookups inside the transaction
+          const itemIds = payload.items.map(i => i.menuItemId);
+          const menuItems = await tx.menuItem.findMany({
+               where: { id: { in: itemIds } }
+          });
+
+          // Create a map for quick lookup
+          const menuItemMap = new Map(menuItems.map(item => [item.id, item]));
 
           for (const item of payload.items) {
-               const menuItem = await tx.menuItem.findUnique({ where: { id: item.menuItemId } });
-               if (!menuItem || !menuItem.isActive) throw new Error(`Menu item ${item.menuItemId} is unavailable`);
-               if (menuItem.stock < item.quantity) throw new Error(`Insufficient stock for ${menuItem.name}`);
+               const menuItem = menuItemMap.get(item.menuItemId);
+               
+               if (!menuItem || !menuItem.isActive) {
+                    throw new Error(`Menu item ${item.menuItemId} is unavailable`);
+               }
+               
+               if (menuItem.stock < item.quantity) {
+                    throw new Error(`Insufficient stock for ${menuItem.name}`);
+               }
 
                const unitPrice = menuItem.discountPrice || menuItem.price;
                const totalPrice = unitPrice * item.quantity;
                subtotal += totalPrice;
 
+               // Still perform atomic stock updates
                await tx.menuItem.update({
                     where: { id: item.menuItemId },
                     data: { stock: { decrement: item.quantity } },
@@ -92,6 +108,9 @@ const placeOrder = async (customerId: string, payload: CreateOrderPayload) => {
           });
 
           return order;
+     }, {
+          maxWait: 20000, // 20 seconds to acquire a connection
+          timeout: 30000, // 30 seconds total execution time
      });
 };
 

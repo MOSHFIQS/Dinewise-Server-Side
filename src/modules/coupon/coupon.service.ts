@@ -1,11 +1,19 @@
 import { prisma } from "../../lib/prisma";
+import { IQueryParams } from "../../interfaces/query.interface";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 
 const createCoupon = async (payload: { code: string; discountType: string; discountValue: number; minOrderValue?: number; validFrom: Date; validUntil: Date; usageLimit?: number }) => {
      return prisma.coupon.create({ data: payload });
 };
 
-const getAllCoupons = async () => {
-     return prisma.coupon.findMany({ orderBy: { createdAt: "desc" } });
+const getAllCoupons = async (query: IQueryParams) => {
+     const couponQuery = new QueryBuilder(prisma.coupon, query)
+          .search()
+          .filter()
+          .sort()
+          .paginate();
+
+     return couponQuery.execute();
 };
 
 const applyCoupon = async (code: string, cartTotal: number) => {
