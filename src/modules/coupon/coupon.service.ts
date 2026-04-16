@@ -18,9 +18,19 @@ const getAllCoupons = async (query: IQueryParams) => {
 
 const applyCoupon = async (code: string, cartTotal: number) => {
      const coupon = await prisma.coupon.findUnique({ where: { code } });
-     if (!coupon) throw new Error("Coupon not found");
-     if (!coupon.isActive || new Date() < new Date(coupon.validFrom) || new Date() > new Date(coupon.validUntil)) {
-          throw new Error("Coupon is invalid or expired");
+     if (!coupon) throw new Error("This coupon code does not exist.");
+
+     if (!coupon.isActive) {
+          throw new Error("This coupon is currently deactivated by the administrator.");
+     }
+
+     const now = new Date();
+     if (now < new Date(coupon.validFrom)) {
+          throw new Error(`This coupon will be active starting from ${new Date(coupon.validFrom).toLocaleDateString()}.`);
+     }
+
+     if (now > new Date(coupon.validUntil)) {
+          throw new Error(`This coupon has expired on ${new Date(coupon.validUntil).toLocaleDateString()}.`);
      }
      if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
           throw new Error("Coupon usage limit reached");
@@ -36,7 +46,7 @@ const applyCoupon = async (code: string, cartTotal: number) => {
           discount = (cartTotal * coupon.discountValue) / 100;
      }
 
-     return { couponId: coupon.id, discountAmount: discount };
+     return { id: coupon.id, code: coupon.code, discountValue: discount };
 };
 
 const deleteCoupon = async (id: string) => {
