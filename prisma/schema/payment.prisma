@@ -8,8 +8,7 @@ model Payment {
 
      transactionId String? @unique
 
-     createdAt DateTime @default(now())
-     updatedAt DateTime @updatedAt
+     refunds Refund[]
 
      @@map("payments")
 }

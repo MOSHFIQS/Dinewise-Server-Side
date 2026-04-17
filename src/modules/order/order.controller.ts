@@ -42,7 +42,14 @@ const updateOrderStatus = async (req: Request, res: Response, next: NextFunction
                deliver: OrderStatus.DELIVERED,
                cancel: OrderStatus.CANCELLED,
           };
-          const newStatus = statusMap[action];
+          
+          let newStatus = statusMap[action];
+
+          // If action is not in map, check if it's a valid literal status string
+          if (!newStatus && Object.values(OrderStatus).includes(action as OrderStatus)) {
+               newStatus = action as OrderStatus;
+          }
+
           if (!newStatus) throw new Error("Invalid status action");
 
           const result = await orderService.updateOrderStatus(req.params.id as string, newStatus);

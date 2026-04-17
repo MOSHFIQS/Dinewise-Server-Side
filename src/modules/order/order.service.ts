@@ -143,7 +143,7 @@ const getCustomerOrders = async (customerId: string, query: IQueryParams = {}) =
      const qb = new QueryBuilder(prisma.order, query, {
           filterableFields: ["status"],
      });
-     return qb.where({ customerId }).include({ items: true, payment: true }).sort().paginate().execute();
+     return qb.where({ customerId }).include({ items: true, payment: true, refunds: true }).sort().paginate().execute();
 };
 
 const updateOrderStatus = async (id: string, status: OrderStatus) => {
@@ -152,7 +152,10 @@ const updateOrderStatus = async (id: string, status: OrderStatus) => {
 
      const updatedOrder = await prisma.order.update({
           where: { id },
-          data: { status },
+          data: { 
+               status,
+               deliveredAt: status === OrderStatus.DELIVERED ? new Date() : oldOrder.deliveredAt
+          },
      });
 
      // Side effects
@@ -188,19 +191,22 @@ const getAllOrders = async (query: IQueryParams = {}) => {
      const qb = new QueryBuilder(prisma.order, query, {
           filterableFields: ["status", "customerId"],
      });
-     return qb
+     const result = await qb
           .include({
                customer: { select: { id: true, name: true, phone: true } },
                items: true,
                payment: true,
+               refunds: true,
           })
           .sort()
           .paginate()
           .execute();
+
+     return result
 };
 
 const getChefOrders = async (chefId: string, query: IQueryParams = {}) => {
-     return getAllOrders(query); 
+     return getAllOrders(query);
 };
 
 export const orderService = {

@@ -1,0 +1,21 @@
+model Refund {
+     id             String       @id @default(uuid())
+     orderId        String
+     paymentId      String
+     customerId     String
+     amount         Float
+     reason         String       @db.Text
+     status         RefundStatus @default(REQUESTED)
+     chefNote       String?      @db.Text
+     adminNote      String?      @db.Text
+     stripeRefundId String?
+
+     order    Order   @relation(fields: [orderId], references: [id])
+     payment  Payment @relation(fields: [paymentId], references: [id])
+     customer User    @relation(fields: [customerId], references: [id])
+
+     createdAt DateTime @default(now())
+     updatedAt DateTime @updatedAt
+
+     @@map("refunds")
+}

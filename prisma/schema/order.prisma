@@ -20,8 +20,10 @@ model Order {
      notes       String?
      tableNumber String?
 
-     items   OrderItem[]
-     payment Payment?
+     items       OrderItem[]
+     payment     Payment?
+     refunds     Refund[]
+     deliveredAt DateTime?
 
      createdAt DateTime @default(now())
      updatedAt DateTime @updatedAt
