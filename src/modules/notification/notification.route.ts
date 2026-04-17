@@ -7,5 +7,7 @@ const router = Router();
 
 router.get("/me", auth(Role.CUSTOMER, Role.CHEF, Role.ADMIN), notificationController.getMyNotifications);
 router.patch("/:id/read", auth(Role.CUSTOMER, Role.CHEF, Role.ADMIN), notificationController.markAsRead);
+router.patch("/mark-all-read", auth(Role.CUSTOMER, Role.CHEF, Role.ADMIN), notificationController.markAllAsRead);
+router.get("/unread-count", auth(Role.CUSTOMER, Role.CHEF, Role.ADMIN), notificationController.getUnreadCount);
 
 export const notificationRouter = router;

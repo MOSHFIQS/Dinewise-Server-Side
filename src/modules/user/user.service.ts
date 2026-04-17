@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma";
+import { auditService } from "../audit/audit.service";
 
 const getProfile = async (id: string) => {
      const user = await prisma.user.findUnique({
@@ -33,6 +34,18 @@ const updateProfile = async (id: string, payload: { name?: string; phone?: strin
                createdAt: true,
           },
      });
+
+     // Side effects
+     auditService
+          .log({
+               userId: id,
+               action: "PROFILE_UPDATED",
+               entityType: "USER",
+               entityId: id,
+               details: payload,
+          })
+          .catch((err) => console.error("Profile update audit log failed:", err));
+
      return user;
 };
 

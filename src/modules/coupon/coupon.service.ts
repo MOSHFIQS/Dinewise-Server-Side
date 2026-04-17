@@ -1,17 +1,34 @@
 import { prisma } from "../../lib/prisma";
 import { IQueryParams } from "../../interfaces/query.interface";
 import { QueryBuilder } from "../../utils/QueryBuilder";
+import { auditService } from "../audit/audit.service";
 
-const createCoupon = async (payload: { code: string; discountType: string; discountValue: number; minOrderValue?: number; validFrom: Date; validUntil: Date; usageLimit?: number }) => {
-     return prisma.coupon.create({ data: payload });
+const createCoupon = async (payload: {
+     code: string;
+     discountType: string;
+     discountValue: number;
+     minOrderValue?: number;
+     validFrom: Date;
+     validUntil: Date;
+     usageLimit?: number;
+}) => {
+     const coupon = await prisma.coupon.create({ data: payload });
+
+     // Side effect
+     auditService
+          .log({
+               action: "COUPON_CREATED",
+               entityType: "COUPON",
+               entityId: coupon.id,
+               details: { code: coupon.code, discount: coupon.discountValue },
+          })
+          .catch((err) => console.error("Coupon create audit failed:", err));
+
+     return coupon;
 };
 
 const getAllCoupons = async (query: IQueryParams) => {
-     const couponQuery = new QueryBuilder(prisma.coupon, query)
-          .search()
-          .filter()
-          .sort()
-          .paginate();
+     const couponQuery = new QueryBuilder(prisma.coupon, query).search().filter().sort().paginate();
 
      return couponQuery.execute();
 };
@@ -50,7 +67,19 @@ const applyCoupon = async (code: string, cartTotal: number) => {
 };
 
 const deleteCoupon = async (id: string) => {
-     return prisma.coupon.delete({ where: { id } });
+     const coupon = await prisma.coupon.delete({ where: { id } });
+
+     // Side effect
+     auditService
+          .log({
+               action: "COUPON_DELETED",
+               entityType: "COUPON",
+               entityId: id,
+               details: { code: coupon.code },
+          })
+          .catch((err) => console.error("Coupon delete audit failed:", err));
+
+     return coupon;
 };
 
 export const couponService = { createCoupon, getAllCoupons, applyCoupon, deleteCoupon };

@@ -12,13 +12,44 @@ const getMyNotifications = async (req: Request, res: Response, next: NextFunctio
      }
 };
 
-const markAsRead = async (req: Request, res: Response, next: NextFunction) => {
+const markAllAsRead = async (req: Request, res: Response, next: NextFunction) => {
      try {
-          const result = await notificationService.markAsRead(req.params.id as string, (req as any).user.id);
-          sendResponse(res, { statusCode: status.OK, success: true, message: "Notification marked as read", data: result });
+          const result = await notificationService.markAllAsRead((req as any).user.id);
+          sendResponse(res, {
+               statusCode: status.OK,
+               success: true,
+               message: "All notifications marked as read",
+               data: result,
+          });
      } catch (e) {
           next(e);
      }
 };
 
-export const notificationController = { getMyNotifications, markAsRead };
+const getUnreadCount = async (req: Request, res: Response, next: NextFunction) => {
+     try {
+          const result = await notificationService.getUnreadCount((req as any).user.id);
+          sendResponse(res, {
+               statusCode: status.OK,
+               success: true,
+               message: "Unread notifications count fetched",
+               data: result,
+          });
+     } catch (e) {
+          next(e);
+     }
+};
+
+const markAsRead = async (req: Request, res: Response, next: NextFunction) => {
+     try {
+          const result = await notificationService.markAsRead(req.params.id as string, (req as any).user.id)
+          sendResponse(res, { statusCode: status.OK, success: true, message: "Marked as read", data: result })
+     } catch (e) { next(e) }
+}
+
+export const notificationController = {
+     getMyNotifications,
+     markAsRead,
+     markAllAsRead,
+     getUnreadCount,
+};

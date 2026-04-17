@@ -40,4 +40,7 @@ enum NotificationType {
      PAYMENT_UPDATE
      SYSTEM
      PROMOTION
+     ACCOUNT_STATUS
+     ORDER_PLACED
+     ORDER_STATUS_UPDATED
 }
