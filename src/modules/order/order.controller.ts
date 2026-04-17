@@ -36,6 +36,7 @@ const updateOrderStatus = async (req: Request, res: Response, next: NextFunction
      try {
           const { action } = req.body;
           const statusMap: Record<string, OrderStatus> = {
+               placed: OrderStatus.PLACED,
                confirm: OrderStatus.CONFIRMED,
                process: OrderStatus.PROCESSING,
                ship: OrderStatus.SHIPPED,

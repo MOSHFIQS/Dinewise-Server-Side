@@ -147,18 +147,56 @@ const getCustomerOrders = async (customerId: string, query: IQueryParams = {}) =
 };
 
 const updateOrderStatus = async (id: string, status: OrderStatus) => {
-     const oldOrder = await prisma.order.findUnique({ where: { id } });
+     const oldOrder = await prisma.order.findUnique({ 
+          where: { id },
+          include: { payment: true, items: true } 
+     });
      if (!oldOrder) throw new Error("Order not found");
 
-     const updatedOrder = await prisma.order.update({
-          where: { id },
-          data: { 
-               status,
-               deliveredAt: status === OrderStatus.DELIVERED ? new Date() : oldOrder.deliveredAt
-          },
+     // 1. Validation Logic - Linear flow: PLACED -> CONFIRMED -> PROCESSING -> SHIPPED -> DELIVERED
+     const validTransitions: Record<OrderStatus, OrderStatus[]> = {
+          [OrderStatus.PLACED]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+          [OrderStatus.CONFIRMED]: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
+          [OrderStatus.PROCESSING]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
+          [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED],
+          [OrderStatus.DELIVERED]: [],
+          [OrderStatus.CANCELLED]: [],
+          [OrderStatus.REFUNDED]: [],
+     };
+
+     // Allow staying in the same status (some UI updates might trigger this)
+     if (oldOrder.status !== status) {
+          if (!validTransitions[oldOrder.status].includes(status)) {
+               throw new Error(`Invalid transition from ${oldOrder.status} to ${status}`);
+          }
+     }
+
+     // 2. Payment Status Check - If paid, cannot move back to PLACED
+     if (oldOrder.payment?.status === "SUCCESS" && status === OrderStatus.PLACED) {
+          throw new Error("Cannot move a paid order back to PLACED status");
+     }
+
+     const updatedOrder = await prisma.$transaction(async (tx) => {
+          // 3. Stock Restoration on Cancellation
+          if (status === OrderStatus.CANCELLED && oldOrder.status !== OrderStatus.CANCELLED) {
+               for (const item of oldOrder.items) {
+                    await tx.menuItem.update({
+                         where: { id: item.menuItemId },
+                         data: { stock: { increment: item.quantity } },
+                    });
+               }
+          }
+
+          return await tx.order.update({
+               where: { id },
+               data: { 
+                    status,
+                    deliveredAt: status === OrderStatus.DELIVERED ? new Date() : oldOrder.deliveredAt
+               },
+          });
      });
 
-     // Side effects
+     // Side effects (Audit & Notification) - Non-critical, fire and forget
      Promise.all([
           auditService.log({
                action: "ORDER_STATUS_UPDATED",
