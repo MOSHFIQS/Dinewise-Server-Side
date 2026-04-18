@@ -3,7 +3,6 @@ import { authRouter } from "../modules/auth/auth.route";
 import { menuItemRouter } from "../modules/menuItem/menuItem.route";
 import { categoryRouter } from "../modules/category/category.route";
 import { orderRouter } from "../modules/order/order.route";
-import { reviewRouter } from "../modules/review/review.route";
 import { couponRouter } from "../modules/coupon/coupon.route";
 import { addressRouter } from "../modules/address/address.route";
 import { notificationRouter } from "../modules/notification/notification.route";
@@ -14,6 +13,7 @@ import { FileRoutes } from "../modules/file/file.route";
 import { auditRouter } from "../modules/audit/audit.route";
 import { refundRouter } from "../modules/refund/refund.route";
 import { StatsRoutes } from "../modules/stats/stats.route";
+import { reviewRouter } from "../modules/review/review.route";
 
 const router = Router();
 

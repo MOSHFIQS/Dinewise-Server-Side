@@ -24,6 +24,45 @@ const getMenuItemReviews = async (req: Request, res: Response, next: NextFunctio
      }
 };
 
+const getMyReviews = async (req: Request, res: Response, next: NextFunction) => {
+     try {
+          const user = (req as any).user;
+          const result = await reviewService.getMyReviews(user.id, req.query as IQueryParams);
+          sendResponse(res, { statusCode: status.OK, success: true, message: "My reviews fetched", data: result });
+     } catch (e) {
+          next(e);
+     }
+};
+
+const getAllReviews = async (req: Request, res: Response, next: NextFunction) => {
+     try {
+          const result = await reviewService.getAllReviews(req.query as IQueryParams);
+          sendResponse(res, { statusCode: status.OK, success: true, message: "All reviews fetched", data: result });
+     } catch (e) {
+          next(e);
+     }
+};
+
+const getChefReviews = async (req: Request, res: Response, next: NextFunction) => {
+     try {
+          const user = (req as any).user;
+          const result = await reviewService.getChefReviews(user.id, req.query as IQueryParams);
+          sendResponse(res, { statusCode: status.OK, success: true, message: "Chef reviews fetched", data: result });
+     } catch (e) {
+          next(e);
+     }
+};
+
+const updateReview = async (req: Request, res: Response, next: NextFunction) => {
+     try {
+          const user = (req as any).user;
+          const result = await reviewService.updateReview(req.params.id as string, user.id, req.body);
+          sendResponse(res, { statusCode: status.OK, success: true, message: "Review updated", data: result });
+     } catch (e) {
+          next(e);
+     }
+};
+
 const deleteReview = async (req: Request, res: Response, next: NextFunction) => {
      try {
           const user = (req as any).user;
@@ -34,4 +73,24 @@ const deleteReview = async (req: Request, res: Response, next: NextFunction) => 
      }
 };
 
-export const reviewController = { createReview, getMenuItemReviews, deleteReview };
+const canReview = async (req: Request, res: Response, next: NextFunction) => {
+     try {
+          const user = (req as any).user;
+          const { menuItemId } = req.params;
+          const result = await reviewService.canReview(user.id, menuItemId as string);
+          sendResponse(res, { statusCode: status.OK, success: true, message: "Review eligibility checked", data: result });
+     } catch (e) {
+          next(e);
+     }
+};
+
+export const reviewController = {
+     createReview,
+     getMenuItemReviews,
+     getMyReviews,
+     getAllReviews,
+     getChefReviews,
+     canReview,
+     updateReview,
+     deleteReview,
+};
