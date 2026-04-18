@@ -38,7 +38,7 @@ const requestRefund = async (userId: string, payload: { orderId: string, amount:
      const refund = await prisma.refund.create({
           data: {
                orderId: payload.orderId,
-               paymentId: order.payment.id,
+               paymentId: order.payment?.id!,
                customerId: userId,
                amount: payload.amount,
                reason: payload.reason,

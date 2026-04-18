@@ -13,6 +13,7 @@ import { adminRouter } from "../modules/admin/admin.route";
 import { FileRoutes } from "../modules/file/file.route";
 import { auditRouter } from "../modules/audit/audit.route";
 import { refundRouter } from "../modules/refund/refund.route";
+import { StatsRoutes } from "../modules/stats/stats.route";
 
 const router = Router();
 
@@ -31,6 +32,7 @@ const moduleRoutes = [
      { path: "/file", route: FileRoutes },
      { path: "/audit", route: auditRouter },
      { path: "/refund", route: refundRouter },
+     { path: "/stats", route: StatsRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
