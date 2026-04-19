@@ -12,7 +12,11 @@ const getProfile = async (id: string) => {
                phone: true,
                role: true,
                status: true,
+               isEmailVerified: true,
+               emailVerifiedAt: true,
+               lastLoginAt: true,
                createdAt: true,
+               updatedAt: true,
           },
      });
      if (!user) throw new Error("User not found");
@@ -31,7 +35,11 @@ const updateProfile = async (id: string, payload: { name?: string; phone?: strin
                phone: true,
                role: true,
                status: true,
+               isEmailVerified: true,
+               emailVerifiedAt: true,
+               lastLoginAt: true,
                createdAt: true,
+               updatedAt: true,
           },
      });
 
