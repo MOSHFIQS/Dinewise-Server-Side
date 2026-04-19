@@ -1,0 +1,14 @@
+model AuditLog {
+     id         String   @id @default(uuid())
+     userId     String?
+     user       User?    @relation(fields: [userId], references: [id])
+     action     String // e.g. "UPDATE_USER", "DELETE_MENU_ITEM"
+     entityType String // e.g. "USER", "MENU_ITEM", "ORDER"
+     entityId   String
+     details    Json? // e.g. what changed
+     ipAddress  String?
+     userAgent  String?
+     createdAt  DateTime @default(now())
+
+     @@map("audit_logs")
+}

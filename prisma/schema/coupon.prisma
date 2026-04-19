@@ -1,0 +1,19 @@
+model Coupon {
+     id            String   @id @default(uuid())
+     code          String   @unique
+     discountType  String // "PERCENTAGE" or "FIXED"
+     discountValue Float
+     minOrderValue Float?
+     validFrom     DateTime
+     validUntil    DateTime
+     isActive      Boolean  @default(true)
+     usageLimit    Int? // Max times it can be used globally
+     usedCount     Int      @default(0)
+
+     orders Order[]
+
+     createdAt DateTime @default(now())
+     updatedAt DateTime @updatedAt
+
+     @@map("coupons")
+}
