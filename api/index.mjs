@@ -32,6 +32,8 @@ var loadEnvVariables = () => {
     "JWT_SECRET",
     "FRONTEND_URL",
     "BACKEND_URL",
+    "ADMIN_EMAIL",
+    "ADMIN_PASSWORD",
     "CLOUDINARY_CLOUD_NAME",
     "CLOUDINARY_API_KEY",
     "CLOUDINARY_API_SECRET",
@@ -52,6 +54,8 @@ var loadEnvVariables = () => {
     JWT_SECRET: process.env.JWT_SECRET,
     FRONTEND_URL: process.env.FRONTEND_URL,
     BACKEND_URL: process.env.BACKEND_URL,
+    ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     CLOUDINARY: {
       CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
       CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
