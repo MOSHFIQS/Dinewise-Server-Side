@@ -11,6 +11,8 @@ interface EnvConfig {
      JWT_SECRET: string;
      FRONTEND_URL: string;
      BACKEND_URL: string;
+     ADMIN_EMAIL: string;
+     ADMIN_PASSWORD: string;
      CLOUDINARY: {
           CLOUDINARY_CLOUD_NAME: string;
           CLOUDINARY_API_KEY: string;
@@ -29,6 +31,8 @@ const loadEnvVariables = (): EnvConfig => {
           "JWT_SECRET",
           "FRONTEND_URL",
           "BACKEND_URL",
+          "ADMIN_EMAIL",
+          "ADMIN_PASSWORD",
           "CLOUDINARY_CLOUD_NAME",
           "CLOUDINARY_API_KEY",
           "CLOUDINARY_API_SECRET",
@@ -51,6 +55,8 @@ const loadEnvVariables = (): EnvConfig => {
           JWT_SECRET: process.env.JWT_SECRET as string,
           FRONTEND_URL: process.env.FRONTEND_URL as string,
           BACKEND_URL: process.env.BACKEND_URL as string,
+          ADMIN_EMAIL: process.env.ADMIN_EMAIL as string,
+          ADMIN_PASSWORD: process.env.ADMIN_PASSWORD as string,
           CLOUDINARY: {
                CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
                CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,
