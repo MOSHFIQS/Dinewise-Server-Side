@@ -12,7 +12,7 @@ const getAllUsers = async (query: IQueryParams) => {
      return qb.search().filter().sort().paginate().execute();
 };
 
-const updateUserStatus = async (id: string, status: "ACTIVE" | "BANNED" | "SUSPENDED") => {
+const updateUserStatus = async (id: string, status: "ACTIVE" | "BANNED" | "SUSPENDED", auditMeta?: { userId?: string, ipAddress?: string, userAgent?: string }) => {
      const oldUser = await prisma.user.findUnique({ where: { id } });
      if (!oldUser) throw new Error("User not found");
 
@@ -28,6 +28,9 @@ const updateUserStatus = async (id: string, status: "ACTIVE" | "BANNED" | "SUSPE
                entityType: "USER",
                entityId: id,
                details: { oldStatus: oldUser.status, newStatus: status },
+               userId: auditMeta?.userId,
+               ipAddress: auditMeta?.ipAddress,
+               userAgent: auditMeta?.userAgent,
           }),
           notificationService.createNotification({
                userId: id,
@@ -37,6 +40,38 @@ const updateUserStatus = async (id: string, status: "ACTIVE" | "BANNED" | "SUSPE
                meta: { status },
           }),
      ]).catch((err) => console.error("Admin status update side effects failed:", err));
+
+     return updatedUser;
+};
+
+const updateUserRole = async (id: string, role: "CUSTOMER" | "CHEF" | "ADMIN", auditMeta?: { userId?: string, ipAddress?: string, userAgent?: string }) => {
+     const oldUser = await prisma.user.findUnique({ where: { id } });
+     if (!oldUser) throw new Error("User not found");
+
+     const updatedUser = await prisma.user.update({
+          where: { id },
+          data: { role },
+     });
+
+     // Side effects
+     Promise.all([
+          auditService.log({
+               action: "USER_ROLE_UPDATED",
+               entityType: "USER",
+               entityId: id,
+               details: { oldRole: oldUser.role, newRole: role },
+               userId: auditMeta?.userId,
+               ipAddress: auditMeta?.ipAddress,
+               userAgent: auditMeta?.userAgent,
+          }),
+          notificationService.createNotification({
+               userId: id,
+               type: "ACCOUNT_STATUS",
+               title: "Account Role Updated",
+               message: `Your account role has been updated to ${role.toLowerCase()}.`,
+               meta: { role },
+          }),
+     ]).catch((err) => console.error("Admin role update side effects failed:", err));
 
      return updatedUser;
 };
@@ -60,4 +95,4 @@ const getDashboardStats = async () => {
      };
 };
 
-export const adminService = { getAllUsers, updateUserStatus, getDashboardStats };
+export const adminService = { getAllUsers, updateUserStatus, updateUserRole, getDashboardStats };

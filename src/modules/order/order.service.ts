@@ -17,7 +17,7 @@ interface CreateOrderPayload {
      }[];
 }
 
-const placeOrder = async (customerId: string, payload: CreateOrderPayload) => {
+const placeOrder = async (customerId: string, payload: CreateOrderPayload, auditMeta?: { ipAddress?: string, userAgent?: string }) => {
      const order = await prisma.$transaction(
           async (tx) => {
                let subtotal = 0;
@@ -126,6 +126,8 @@ const placeOrder = async (customerId: string, payload: CreateOrderPayload) => {
                entityType: "ORDER",
                entityId: order.id,
                details: { totalPrice: order.totalPrice },
+               ipAddress: auditMeta?.ipAddress,
+               userAgent: auditMeta?.userAgent,
           }),
           notificationService.createNotification({
                userId: customerId,
@@ -146,7 +148,7 @@ const getCustomerOrders = async (customerId: string, query: IQueryParams = {}) =
      return qb.where({ customerId }).include({ items: true, payment: true, refunds: true }).sort().paginate().execute();
 };
 
-const updateOrderStatus = async (id: string, status: OrderStatus) => {
+const updateOrderStatus = async (id: string, status: OrderStatus, auditMeta?: { userId?: string, ipAddress?: string, userAgent?: string }) => {
      const oldOrder = await prisma.order.findUnique({ 
           where: { id },
           include: { payment: true, items: true } 
@@ -203,6 +205,9 @@ const updateOrderStatus = async (id: string, status: OrderStatus) => {
                entityType: "ORDER",
                entityId: id,
                details: { oldStatus: oldOrder.status, newStatus: status },
+               userId: auditMeta?.userId,
+               ipAddress: auditMeta?.ipAddress,
+               userAgent: auditMeta?.userAgent,
           }),
           notificationService.createNotification({
                userId: oldOrder.customerId,

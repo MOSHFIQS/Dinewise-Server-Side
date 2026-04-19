@@ -5,7 +5,10 @@ import httpStatus from "http-status";
 
 const requestRefund = async (req: Request, res: Response, next: NextFunction) => {
      try {
-          const result = await refundService.requestRefund((req as any).user.id, req.body);
+          const result = await refundService.requestRefund((req as any).user.id, req.body, {
+               ipAddress: req.ip,
+               userAgent: req.headers["user-agent"]
+          });
           sendResponse(res, {
                statusCode: httpStatus.CREATED,
                success: true,
@@ -37,7 +40,10 @@ const adminReviewRefund = async (req: Request, res: Response, next: NextFunction
      try {
           const { id } = req.params;
           const { action, note } = req.body;
-          const result = await refundService.adminReviewRefund((req as any).user.id, id as string, action, note);
+          const result = await refundService.adminReviewRefund((req as any).user.id, id as string, action, note, {
+               ipAddress: req.ip,
+               userAgent: req.headers["user-agent"]
+          });
           sendResponse(res, {
                statusCode: httpStatus.OK,
                success: true,

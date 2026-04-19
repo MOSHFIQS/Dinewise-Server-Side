@@ -9,7 +9,7 @@ import { auditService } from "../audit/audit.service";
 
 const stripe = new Stripe(envVars.STRIPE.STRIPE_SECRET_KEY);
 
-const requestRefund = async (userId: string, payload: { orderId: string, amount: number, reason: string }) => {
+const requestRefund = async (userId: string, payload: { orderId: string, amount: number, reason: string }, auditMeta?: { ipAddress?: string, userAgent?: string }) => {
      const order = await prisma.order.findUnique({
           where: { id: payload.orderId },
           include: { payment: true },
@@ -70,6 +70,8 @@ const requestRefund = async (userId: string, payload: { orderId: string, amount:
           entityType: "REFUND",
           entityId: refund.id,
           details: { orderId: order.id, amount: payload.amount },
+          ipAddress: auditMeta?.ipAddress,
+          userAgent: auditMeta?.userAgent,
      });
 
      return refund;
@@ -122,7 +124,7 @@ const chefReviewRefund = async (chefId: string, refundId: string, action: "APPRO
      return updatedRefund;
 };
 
-const adminReviewRefund = async (adminId: string, refundId: string, action: "APPROVE" | "REJECT", note?: string) => {
+const adminReviewRefund = async (adminId: string, refundId: string, action: "APPROVE" | "REJECT", note?: string, auditMeta?: { ipAddress?: string, userAgent?: string }) => {
      const refund = await prisma.refund.findUnique({
           where: { id: refundId },
           include: { order: true, payment: true },
@@ -198,6 +200,8 @@ const adminReviewRefund = async (adminId: string, refundId: string, action: "APP
                entityType: "REFUND",
                entityId: refund.id,
                details: { orderId: refund.orderId, amount: refund.amount, stripeRefundId },
+               ipAddress: auditMeta?.ipAddress,
+               userAgent: auditMeta?.userAgent,
           });
 
           return processedRefund;

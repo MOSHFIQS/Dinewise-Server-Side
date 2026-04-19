@@ -16,8 +16,26 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
 const updateUserStatus = async (req: Request, res: Response, next: NextFunction) => {
      try {
           const { status: userStatus } = req.body;
-          const result = await adminService.updateUserStatus(req.params.id as string, userStatus);
+          const result = await adminService.updateUserStatus(req.params.id as string, userStatus, {
+               userId: (req as any).user?.id,
+               ipAddress: req.ip,
+               userAgent: req.headers["user-agent"],
+          });
           sendResponse(res, { statusCode: status.OK, success: true, message: "User status updated", data: result });
+     } catch (e) {
+          next(e);
+     }
+};
+
+const updateUserRole = async (req: Request, res: Response, next: NextFunction) => {
+     try {
+          const { role: userRole } = req.body;
+          const result = await adminService.updateUserRole(req.params.id as string, userRole, {
+               userId: (req as any).user?.id,
+               ipAddress: req.ip,
+               userAgent: req.headers["user-agent"],
+          });
+          sendResponse(res, { statusCode: status.OK, success: true, message: "User role updated", data: result });
      } catch (e) {
           next(e);
      }
@@ -32,4 +50,4 @@ const getDashboardStats = async (req: Request, res: Response, next: NextFunction
      }
 };
 
-export const adminController = { getAllUsers, updateUserStatus, getDashboardStats };
+export const adminController = { getAllUsers, updateUserStatus, updateUserRole, getDashboardStats };
